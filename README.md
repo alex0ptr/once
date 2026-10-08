@@ -11,8 +11,7 @@ The typical use case: reading secrets from 1Password without approving every
 single read with your fingerprint.
 
 ```sh
-# once, e.g. in ~/.zshrc: a tenant key for this terminal session
-export ONCE_TENANT="${ONCE_TENANT:-$(uuidgen)}"
+export ONCE_TENANT="${ONCE_TENANT:-$(uuidgen)}"   # e.g. in ~/.zshrc
 
 # later while you work in your scripts / direnv / mise.toml
 export GITHUB_TOKEN="$(once --ttl 8h --no-dir -- op read op://Private/GitHub/token)"
@@ -20,14 +19,6 @@ export GITHUB_TOKEN="$(once --ttl 8h --no-dir -- op read op://Private/GitHub/tok
 
 The first call asks for your fingerprint, every further call within 8 hours
 with the same tenant key does not.
-
-With [mise](https://mise.jdx.dev) in any directory hierarchy or a specific project using a `mise.local.toml`:
-
-```toml
-[env]
-ONCE_TENANT = "5D0F399A-5091-43F1-9C43-7C5A2377D90D" # specific to this context
-TOKEN = "{{ exec(command='once --ttl 12h --no-dir -- op read op://Private/something/token') }}"
-```
 
 ## Install
 
@@ -64,10 +55,6 @@ once help
 
 `once status` shows the daemon, its entry count and when it will stop.
 `once clear` drops every cached value and stops the daemon.
-
-Every call needs a tenant key. The examples below assume `ONCE_TENANT` is
-exported as shown at the top; otherwise add `--tenant KEY` (see
-[Tenant keys](#tenant-keys)).
 
 Everything after `--` is executed directly (no shell). Environment variables,
 working directory and terminal are inherited from your shell. If you need
@@ -134,19 +121,8 @@ to be kept secret; it may well live in a config file. It does two things:
 It does not stop other processes of your own user from using the cache; see
 [Security model](#security-model).
 
-There are two ways to pass it:
-
-```sh
-# 1. Environment variable (recommended): set once, used by every call
-export ONCE_TENANT="${ONCE_TENANT:-$(uuidgen)}"
-once --ttl 8h --no-dir -- op read op://Private/GitHub/token
-
-# 2. Flag: takes precedence over $ONCE_TENANT, e.g. for a project-wide key
-once --tenant my-project --ttl 8h --no-dir -- op read op://Private/GitHub/token
-```
-
-The `${ONCE_TENANT:-$(uuidgen)}` pattern gives every new terminal its own
-tenant while subshells and scripts started from it share the cache.
+The `${ONCE_TENANT:-$(uuidgen)}` pattern above gives every new terminal its
+own tenant while subshells and scripts started from it share the cache.
 Use a fixed value to share the cache across terminals.
 
 (Side note: a key passed via `--tenant` shows up in the process list.)
@@ -158,8 +134,8 @@ Use a fixed value to share the cache across terminals.
 3. On a miss, it runs the command itself, in your directory, with your
    environment. If the command succeeds, `once` starts the daemon if needed
    and hands it the output together with the expiry time.
-4. The daemon keeps entries in memory only. It wipes each entry when it
-   expires and shuts down when no entry is left.
+4. The daemon keeps entries in memory only. It tracks the latest expiry and
+   shuts down when no entry is left.
 
 The socket lives in `$XDG_RUNTIME_DIR/once-<uid>/` (or the temp dir) in a
 directory with mode `0700`, so other users cannot connect. That directory also
