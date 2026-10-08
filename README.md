@@ -11,7 +11,8 @@ The typical use case: reading secrets from 1Password without approving every
 single read with your fingerprint.
 
 ```sh
-export ONCE_TENANT="${ONCE_TENANT:-$(uuidgen)}"   # e.g. in ~/.zshrc
+# once, e.g. in ~/.zshrc: a tenant key for this terminal session
+export ONCE_TENANT="${ONCE_TENANT:-$(uuidgen)}"
 
 # later while you work in your scripts / direnv / mise.toml
 export GITHUB_TOKEN="$(once --ttl 8h --no-dir -- op read op://Private/GitHub/token)"
@@ -19,6 +20,14 @@ export GITHUB_TOKEN="$(once --ttl 8h --no-dir -- op read op://Private/GitHub/tok
 
 The first call asks for your fingerprint, every further call within 8 hours
 with the same tenant key does not.
+
+With [mise](https://mise.jdx.dev) in any directory hierarchy or a specific project using a `mise.local.toml`:
+
+```toml
+[env]
+ONCE_TENANT = "5D0F399A-5091-43F1-9C43-7C5A2377D90D" # specific to this context
+TOKEN = "{{ exec(command='once --ttl 12h --no-dir -- op read op://Private/something/token') }}"
+```
 
 ## Install
 
