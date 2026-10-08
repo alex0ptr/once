@@ -163,3 +163,7 @@ the daemon.
 - Outputs larger than 64 MiB are passed through but not cached.
 - Expiry is checked against the wall clock on every read, so entries also
   expire correctly after a laptop has been asleep.
+
+## License
+
+[MIT](LICENSE)
