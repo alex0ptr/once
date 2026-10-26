@@ -4,9 +4,14 @@
 package main
 
 import (
+	"cmp"
 	"fmt"
 	"os"
+	"runtime/debug"
 )
+
+// version is set via ldflags in release builds.
+var version string
 
 func main() { os.Exit(run(os.Args[1:])) }
 
@@ -22,9 +27,21 @@ func run(args []string) int {
 		case "help", "-h", "-help", "--help":
 			usage()
 			return 0
+		case "version", "-version", "--version":
+			fmt.Println("once", buildVersion())
+			return 0
 		}
 	}
 	return runCached(args)
+}
+
+// buildVersion falls back to the module version, which go install sets.
+func buildVersion() string {
+	var mod string
+	if bi, ok := debug.ReadBuildInfo(); ok {
+		mod = bi.Main.Version
+	}
+	return cmp.Or(version, mod, "(devel)")
 }
 
 func usage() {
@@ -32,6 +49,7 @@ func usage() {
   once --ttl DURATION [--until TIME] [--tenant KEY] [--refresh] [--no-dir] -- COMMAND [ARGS...]
   once status
   once clear
+  once --version
   once --help
 
 Runs COMMAND in the current directory and caches its stdout. Later calls with
@@ -50,6 +68,7 @@ Options:
 Commands:
   status           show the state of the background daemon
   clear            drop all cached values and stop the daemon
+  version          print the version
   help, --help     show this help
 
 Results of commands exiting non-zero are never cached.

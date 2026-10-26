@@ -213,7 +213,7 @@ func getEntry(c *http.Client, key string) ([]byte, bool, error) {
 	if err != nil {
 		return nil, false, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	switch resp.StatusCode {
 	case http.StatusOK:
 		data, err := io.ReadAll(resp.Body)
@@ -235,7 +235,7 @@ func putEntry(c *http.Client, key string, data []byte, exp time.Time) error {
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	if resp.StatusCode != http.StatusNoContent {
 		msg, _ := io.ReadAll(io.LimitReader(resp.Body, 512))
 		return fmt.Errorf("daemon: %s %s", resp.Status, strings.TrimSpace(string(msg)))
@@ -263,7 +263,7 @@ func ping(c *http.Client) error {
 	if err != nil {
 		return err
 	}
-	resp.Body.Close()
+	_ = resp.Body.Close()
 	return nil
 }
 
@@ -282,7 +282,7 @@ func ensureDaemon(c *http.Client, dir string) error {
 	if err != nil {
 		return err
 	}
-	defer logf.Close()
+	defer func() { _ = logf.Close() }()
 
 	cmd := exec.Command(exe, "__daemon")
 	cmd.Dir = "/"
@@ -334,7 +334,7 @@ func runStatus() int {
 		warnf("%v", err)
 		return 1
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	var st statusInfo
 	if err := json.NewDecoder(resp.Body).Decode(&st); err != nil {
 		warnf("bad status response: %v", err)
@@ -367,7 +367,7 @@ func runClear() int {
 		warnf("%v", err)
 		return 1
 	}
-	resp.Body.Close()
+	_ = resp.Body.Close()
 	fmt.Println("cache cleared, daemon stopped")
 	return 0
 }

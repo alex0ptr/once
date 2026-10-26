@@ -44,7 +44,7 @@ func runDaemon() int {
 		log.Printf("lock file: %v", err)
 		return 1
 	}
-	defer lock.Close()
+	defer func() { _ = lock.Close() }()
 	if err := syscall.Flock(int(lock.Fd()), syscall.LOCK_EX|syscall.LOCK_NB); err != nil {
 		return 0 // another daemon is already running
 	}
@@ -57,7 +57,7 @@ func runDaemon() int {
 		return 1
 	}
 	_ = os.Chmod(sock, 0o600)
-	defer os.Remove(sock)
+	defer func() { _ = os.Remove(sock) }()
 
 	s := newStore(idleGrace)
 	srv := &http.Server{Handler: s.routes(), ReadHeaderTimeout: 5 * time.Second}

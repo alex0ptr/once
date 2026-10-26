@@ -1,0 +1,18 @@
+version: 2
+
+project_name: once
+
+builds:
+  - env:
+      - CGO_ENABLED=0
+    goos: [darwin, linux]
+    goarch: [amd64, arm64]
+    ldflags:
+      - -s -w -X main.version={{.Tag}}
+
+changelog:
+  disable: true
+
+# release-please creates the release and its notes, we only add the binaries.
+release:
+  mode: keep-existing

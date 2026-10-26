@@ -35,6 +35,8 @@ TOKEN = "{{ exec(command='once --ttl 12h --no-dir -- op read op://Private/someth
 go install github.com/alex0ptr/once@latest   # Go 1.27+, no dependencies besides the standard library
 ```
 
+Prebuilt binaries are attached to each [GitHub release](https://github.com/alex0ptr/once/releases).
+
 macOS and Linux only.
 
 ## Usage
@@ -51,6 +53,7 @@ For more verbose documentation keep reading.
 once --ttl DURATION [--until TIME] [--tenant KEY] [--refresh] [--no-dir] -- COMMAND [ARGS...]
 once status
 once clear
+once version
 once help
 ```
 
@@ -64,6 +67,7 @@ once help
 
 `once status` shows the daemon, its entry count and when it will stop.
 `once clear` drops every cached value and stops the daemon.
+`once version` (or `--version`) prints the version.
 
 Everything after `--` is executed directly (no shell). Environment variables,
 working directory and terminal are inherited from your shell. If you need

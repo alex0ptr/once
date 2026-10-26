@@ -121,3 +121,14 @@ func TestStoreWipesAtExpiry(t *testing.T) {
 		}
 	})
 }
+
+func TestBuildVersion(t *testing.T) {
+	if buildVersion() == "" {
+		t.Error("empty fallback version")
+	}
+	t.Cleanup(func() { version = "" })
+	version = "v1.2.3"
+	if got := buildVersion(); got != "v1.2.3" {
+		t.Errorf("want ldflags version, got %q", got)
+	}
+}
